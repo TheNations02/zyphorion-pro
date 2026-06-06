@@ -123,39 +123,7 @@
 
 <script>
 (function() {
-  // ─── Key generation ───
-  function crc16(data) {
-    var crc = 0xFFFF;
-    for (var i = 0; i < data.length; i++) {
-      crc ^= data[i];
-      for (var j = 0; j < 8; j++) {
-        if (crc & 1) { crc = (crc >>> 1) ^ 0xA001; }
-        else { crc = crc >>> 1; }
-      }
-    }
-    return crc & 0xFFFF;
-  }
-
-  function generateKey() {
-    var now = Math.floor(Date.now() / 60000);
-    var rand = Math.floor(Math.random() * 65536);
-    var buf = new Uint8Array(4);
-    buf[0] = (now >> 8) & 0xFF;
-    buf[1] = now & 0xFF;
-    buf[2] = (rand >> 8) & 0xFF;
-    buf[3] = rand & 0xFF;
-    var cksum = crc16(buf);
-    var reserved = 0x0000;
-    var parts = [
-      ('0000' + now.toString(16).toUpperCase()).slice(-4),
-      ('0000' + rand.toString(16).toUpperCase()).slice(-4),
-      ('0000' + cksum.toString(16).toUpperCase()).slice(-4),
-      ('0000' + reserved.toString(16).toUpperCase()).slice(-4)
-    ];
-    return parts.join('-');
-  }
-
-  var key = generateKey();
+  var WORKER_URL = 'https://zyphorion-key.gabrielito010101010101.workers.dev';
   var expiresMs = 15 * 60 * 1000;
   var startTime = Date.now();
   var keyEl = document.getElementById('keyDisplay');
@@ -163,7 +131,23 @@
   var copyLabel = document.getElementById('copyLabel');
   var countdownEl = document.getElementById('countdown');
 
-  keyEl.textContent = key;
+  // ─── Fetch key from Worker ───
+  (async function() {
+    try {
+      var resp = await fetch(WORKER_URL + '/generate-key');
+      var data = await resp.json();
+      if (data.success && data.key) {
+        key = data.key;
+        keyEl.textContent = key;
+      } else {
+        keyEl.textContent = 'Error al generar clave';
+      }
+    } catch (e) {
+      keyEl.textContent = 'Error de conexión';
+    }
+  })();
+
+  var key = null;
 
   // ─── Countdown ───
   function updateCountdown() {
@@ -180,18 +164,8 @@
   updateCountdown();
 
   // ─── Copy ───
-  function getKeyParam() {
-    var params = new URLSearchParams(window.location.search);
-    return params.get('key');
-  }
-
-  var urlKey = getKeyParam();
-  if (urlKey && /^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/.test(urlKey)) {
-    key = urlKey;
-    keyEl.textContent = key;
-  }
-
   copyBtn.addEventListener('click', async function() {
+    if (!key) return;
     try {
       await navigator.clipboard.writeText(key);
       copyBtn.classList.add('copied');
@@ -201,7 +175,6 @@
         copyLabel.textContent = 'Copiar clave';
       }, 2500);
     } catch (_) {
-      // fallback
       var ta = document.createElement('textarea');
       ta.value = key;
       document.body.appendChild(ta);
