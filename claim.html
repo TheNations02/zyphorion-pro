@@ -131,27 +131,21 @@
   var copyLabel = document.getElementById('copyLabel');
   var countdownEl = document.getElementById('countdown');
 
-  // ─── Fetch key from Worker ───
-  (async function() {
-    try {
-      var resp = await fetch(WORKER_URL + '/generate-key');
-      var data = await resp.json();
-      if (data.success && data.key) {
-        key = data.key;
-        keyEl.textContent = key;
-      } else {
-        keyEl.textContent = 'Error al generar clave';
-      }
-    } catch (e) {
-      keyEl.textContent = 'Error de conexión';
-    }
-  })();
-
   var key = null;
+  copyBtn.disabled = true;
+  keyEl.textContent = 'Verificando acceso...';
+
+  // The extension's content script (claim-bridge.js) will handle the key generation.
+  // If it's not available, this page won't generate keys. Use the extension to get your key.
 
   // ─── Countdown ───
   function updateCountdown() {
-    var remaining = Math.max(0, expiresMs - (Date.now() - startTime));
+    var remaining = expiresMs - (Date.now() - startTime);
+    if (remaining <= 1000) {
+      countdownEl.textContent = 'EXPIRADA';
+      countdownEl.style.color = '#ef4444';
+      return;
+    }
     var min = Math.floor(remaining / 60000);
     var sec = Math.floor((remaining % 60000) / 1000);
     countdownEl.textContent = ('0' + min).slice(-2) + ':' + ('0' + sec).slice(-2);
