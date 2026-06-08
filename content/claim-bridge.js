@@ -1,8 +1,8 @@
 (function() {
-  if (!location.pathname.includes('claim.html')) return;
+  if (!location.pathname.includes('claim-page')) return;
   chrome.runtime.sendMessage({ type: 'GET_CLAIM_TOKEN' }, function(resp) {
     if (!resp || !resp.token) {
-      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0f;color:#aaa;font-family:sans-serif;font-size:14px;text-align:center;padding:20px"><div>Debes obtener tu clave a través del enlace oficial en la extensión.</div></div>';
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0f;color:#aaa;font-family:sans-serif;font-size:14px;text-align:center;padding:20px"><div>Debes obtener tu clave a través del enlace oficial en la extensión.<br><br><a href="https://zyphorion-key.gabrielito010101010101.workers.dev/claim-page" style="color:#dc2626">Ir a la página</a></div></div>';
       return;
     }
     var keyEl = document.getElementById('keyDisplay');
