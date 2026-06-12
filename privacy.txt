@@ -1,0 +1,11 @@
+Zyphorion - Privacy Policy
+
+Zyphorion does not collect, store, or transmit any personal user data. All operations are performed locally on the user's device using chrome.storage.local. No information is shared with third parties.
+
+The only external data requests are:
+- HaveIBeenPwned API (optional, manually triggered by the user for the Breach Scanner feature)
+- Cloudflare Worker for PRO key verification (anonymized, no personal data sent)
+
+No analytics, no tracking, no ads.
+
+Last updated: June 2026
